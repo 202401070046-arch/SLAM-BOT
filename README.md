@@ -47,9 +47,9 @@ Repository Structure
 Current Progress
 
 - [x] Initial MPU6050 code uploaded to GitHub.
-- [ ] Test and verify sensor readings.
+- [x] Test and verify sensor readings.
 - [ ] Integrate additional sensors.
-- [ ] Implement motor control.
+- [x] Implement motor control.
 - [ ] Integrate localization and mapping.
 - [ ] Test the complete robot.
 
