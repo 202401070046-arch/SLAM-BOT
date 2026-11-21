@@ -75,6 +75,12 @@ Contributors
 
 Add contributor names and project responsibilities here.
 
-License
+## License
 
-The project's license will be specified here.
+Copyright (c) 2026 Atharv Darade. All Rights Reserved.
+
+Permission is granted to use, copy, modify, and distribute the code and materials in this repository for personal, educational, and research purposes, provided that appropriate credit is given to the original author, Atharv Darade.
+
+The original copyright notice and author attribution must be retained in all copies or substantial portions of the project.
+
+Commercial use or redistribution without proper attribution is not permitted.
