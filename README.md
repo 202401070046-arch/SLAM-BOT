@@ -73,7 +73,7 @@ Future Improvements
 
 Contributors
 
-Add contributor names and project responsibilities here.
+None
 
 ## License
 
