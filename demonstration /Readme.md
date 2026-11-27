@@ -15,3 +15,7 @@ inertial measurement unit (IMU).
 - Status: Initial sensor testing
 
 Video: [https://youtube.com/shorts/TU5rJpRCjlE?feature=share](https://youtube.com/shorts/TU5rJpRCjlE?feature=share)
+
+### 2. Bot Prototype #1 
+
+Video: [https://youtube.com/shorts/BdxhQ03X-8k?si=KOeUtdkNJXc0pQPc](https://youtube.com/shorts/BdxhQ03X-8k?si=KOeUtdkNJXc0pQPc)
