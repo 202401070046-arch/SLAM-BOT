@@ -1,0 +1,192 @@
+#define BLYNK_TEMPLATE_ID "TMPL3oiXleAPs"
+#define BLYNK_TEMPLATE_NAME "Wifi car control"
+#define BLYNK_AUTH_TOKEN "jA_BqJZ4fHojZYvuMtM_-D9cxO-cKZQZ"
+
+#include <WiFi.h>
+#include <BlynkSimpleEsp32.h>
+#include <Wire.h>
+#include <WiFiUdp.h>
+WiFiUDP u;
+IPAddress pc(10, 152, 65, 224);
+
+char auth[] = "";
+char ssid[] = "";
+char pass[] = "";
+
+#define ENA 25
+#define IN1 26
+#define IN2 27
+#define IN3 18
+#define IN4 19
+#define ENB 23
+
+int x = 0;
+int y = 0;
+int Speed = 150;
+
+unsigned long lastSensorTime = 0;
+void carStop();
+void smartcar();
+void readMPU();
+void carForward();
+void carBackward();
+void carLeft();
+void carRight();
+
+void setup() {
+  Serial.begin(115200);
+
+  Wire.begin(21, 22);
+  Wire.beginTransmission(0x68);
+  Wire.write(0x6B);
+  Wire.write(0);
+  Wire.endTransmission();
+
+  pinMode(ENA, OUTPUT);
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+  pinMode(ENB, OUTPUT);
+
+  carStop();
+
+  WiFi.mode(WIFI_STA);
+  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
+  u.begin(8888);
+}
+
+BLYNK_WRITE(V0) {
+  y = param.asInt() ? 100 : 0;
+}
+
+BLYNK_WRITE(V2) {
+  y = param.asInt() ? -100 : 0;
+}
+
+BLYNK_WRITE(V3) {
+  x = param.asInt() ? -100 : 0;
+}
+
+BLYNK_WRITE(V4) {
+  x = param.asInt() ? 100 : 0;
+}
+
+void loop() {
+  Blynk.run();
+
+  if (Blynk.connected()) {
+    smartcar();
+  } else {
+    carStop();
+  }
+
+  if (millis() - lastSensorTime >= 20) {
+    lastSensorTime = millis();
+    readMPU();
+  }
+}
+
+int16_t rd() {
+  int16_t h = Wire.read();
+  return (h << 8) | Wire.read();
+}
+
+void readMPU() {
+  Wire.beginTransmission(0x68);
+  Wire.write(0x3B);
+
+  if (Wire.endTransmission(false) != 0) {
+    return;
+  }
+
+  if (Wire.requestFrom((uint8_t)0x68, (uint8_t)14) != 14) {
+    return;
+  }
+
+  int16_t rawAx = rd();
+  int16_t rawAy = rd();
+  int16_t rawAz = rd();
+
+  rd();
+
+  int16_t rawGx = rd();
+  int16_t rawGy = rd();
+  int16_t rawGz = rd();
+
+  float ax = rawAx / 16384.0;
+  float ay = rawAy / 16384.0;
+  float az = rawAz / 16384.0;
+
+  float gx = rawGx / 131.0;
+  float gy = rawGy / 131.0;
+  float gz = rawGz / 131.0;
+
+  char b[64];
+  snprintf(b, sizeof(b), "%.3f,%.3f,%.3f,%.3f,%.3f,%.3f", ax, ay, az, gx, gy, gz);
+
+  Serial.println(b);
+
+  u.beginPacket(pc, 8888);
+  u.print(b);
+  u.endPacket();
+}
+
+void smartcar() {
+  if (y > 20) {
+    carForward();
+  } else if (y < -20) {
+    carBackward();
+  } else if (x < -20) {
+    carLeft();
+  } else if (x > 20) {
+    carRight();
+  } else {
+    carStop();
+  }
+}
+
+void carForward() {
+  analogWrite(ENA, Speed);
+  analogWrite(ENB, Speed);
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+}
+
+void carBackward() {
+  analogWrite(ENA, Speed);
+  analogWrite(ENB, Speed);
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+}
+
+void carLeft() {
+  analogWrite(ENA, Speed);
+  analogWrite(ENB, Speed);
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+}
+
+void carRight() {
+  analogWrite(ENA, Speed);
+  analogWrite(ENB, Speed);
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+}
+
+void carStop() {
+  analogWrite(ENA, 0);
+  analogWrite(ENB, 0);
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+}
